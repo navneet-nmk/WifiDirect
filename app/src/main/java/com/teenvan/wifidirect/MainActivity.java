@@ -27,7 +27,7 @@ import java.util.Map;
 
 import de.greenrobot.event.EventBus;
 
-public class MainActivity extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener {
+public class MainActivity extends AppCompatActivity  {
 
     // Declaration of member variables
     private final IntentFilter intentFilter = new IntentFilter();
@@ -38,6 +38,8 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
     private WifiP2pManager.PeerListListener mPeerListListener;
     private RecyclerView mDevicesList;
     private ArrayList<DeviceClass> devs = new ArrayList<>();
+    private String host;
+    private WifiP2pManager.ConnectionInfoListener connectionInfoListener;
 
     // EventBus Declaration
     private EventBus bus = EventBus.getDefault();
@@ -97,24 +99,50 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
                             WifiP2pConfig config = new WifiP2pConfig();
                             config.deviceAddress = devs.get(position).getDeviceId();
                             config.wps.setup = WpsInfo.PBC;
-                            manager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
-                                @Override
-                                public void onSuccess() {
-                                    Toast.makeText(MainActivity.this,"Connected",Toast.LENGTH_SHORT)
-                                            .show();
-                                    Intent intent = new Intent(MainActivity.this, ChatActivity.class);
-                                    startActivity(intent);
-                                }
+                            if(host!=null) {
+                                manager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
+                                    @Override
+                                    public void onSuccess() {
+                                        Toast.makeText(MainActivity.this, "Connected", Toast.LENGTH_SHORT)
+                                                .show();
+                                        Intent intent = new Intent(MainActivity.this,
+                                                ChatActivity.class);
+                                        intent.putExtra("Host", host);
+                                        startActivity(intent);
+                                    }
 
-                                @Override
-                                public void onFailure(int reason) {
-                                    Toast.makeText(MainActivity.this, "Connect failed. Retry."+reason,
-                                            Toast.LENGTH_SHORT).show();
-                                }
-                            });
+                                    @Override
+                                    public void onFailure(int reason) {
+                                        Toast.makeText(MainActivity.this, "Connect failed. Retry." + reason,
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+
+                            }else{
+                                Toast.makeText(MainActivity.this, "Host is null",Toast.LENGTH_SHORT).show();
+                            }
                         }
                     }
                 }));
+ connectionInfoListener = new WifiP2pManager.ConnectionInfoListener() {
+            @Override
+            public void onConnectionInfoAvailable(WifiP2pInfo info) {
+                host = info.groupOwnerAddress.getHostAddress();
+                Log.d("Host Address Information", host);
+
+                if (info.groupFormed && info.isGroupOwner) {
+                    // Do whatever tasks are specific to the group owner.
+                    // One common case is creating a server thread and accepting
+                    // incoming connections.
+                    Toast.makeText(MainActivity.this, "Group Owner", Toast.LENGTH_LONG).show();
+                } else if (info.groupFormed) {
+                    // The other device acts as the client. In this case,
+                    // you'll want to create a client thread that connects to the group
+                    // owner.
+                    Toast.makeText(MainActivity.this, "Group Formed", Toast.LENGTH_LONG).show();
+                }
+            }
+        };
 
     }
 
@@ -140,7 +168,8 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
     @Override
     public void onResume() {
         super.onResume();
-        receiver = new WifiBroadcastReceiver(manager, mChannel, this, mPeerListListener);
+        receiver = new WifiBroadcastReceiver(manager, mChannel, this, mPeerListListener,
+                connectionInfoListener);
         registerReceiver(receiver, intentFilter);
     }
 
@@ -160,8 +189,4 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
         mDevicesList.setAdapter(adapter);
     }
 
-    @Override
-    public void onConnectionInfoAvailable(WifiP2pInfo info) {
-
-    }
 }

@@ -1,6 +1,5 @@
 package com.teenvan.wifidirect;
 
-import android.bluetooth.BluetoothClass;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -31,17 +30,20 @@ public class WifiBroadcastReceiver extends BroadcastReceiver {
     private MainActivity activity;
     private WifiP2pManager.PeerListListener mPeerListListener;
     private ArrayList<WifiP2pDevice> mDeviceList;
+    private WifiP2pManager.ConnectionInfoListener connectionListener;
 
     // EventBus Declaration
     private EventBus bus = EventBus.getDefault();
 
     public WifiBroadcastReceiver(WifiP2pManager manager, WifiP2pManager.Channel channel,
-                                 MainActivity activity, WifiP2pManager.PeerListListener peerListListener) {
+                                 MainActivity activity, WifiP2pManager.PeerListListener peerListListener,
+                                 WifiP2pManager.ConnectionInfoListener connectionListener) {
         super();
         this.manager = manager;
         this.channel = channel;
         this.activity = activity;
         mPeerListListener = peerListListener;
+        this.connectionListener = connectionListener;
     }
 
     @Override
@@ -96,40 +98,17 @@ public class WifiBroadcastReceiver extends BroadcastReceiver {
             if (manager == null) {
                 return;
             }
-
             NetworkInfo networkInfo = (NetworkInfo) intent
                     .getParcelableExtra(WifiP2pManager.EXTRA_NETWORK_INFO);
 
             if (networkInfo.isConnected()) {
-
                 // We are connected with the other device, request connection
                 // info to find group owner IP
 
-                manager.requestConnectionInfo(channel, new WifiP2pManager.ConnectionInfoListener() {
-                    @Override
-                    public void onConnectionInfoAvailable(WifiP2pInfo info) {
-                        InetAddress groupOwnerAddress = info.groupOwnerAddress;
-
-                        // After the group negotiation, we can determine the group owner.
-                        if (info.groupFormed && info.isGroupOwner) {
-                            // Do whatever tasks are specific to the group owner.
-                            // One common case is creating a server thread and accepting
-                            // incoming connections.
-
-                            // Owner Side - Create a server
-
-                            Toast.makeText(context,"Connected as Group Owner",Toast.LENGTH_SHORT).show();
-                        } else if (info.groupFormed) {
-
-                            // Client Side
-                            Toast.makeText(context,"Connected as client",Toast.LENGTH_SHORT).show();
-
-
-
-                        }
-                    }
-                });
+                manager.requestConnectionInfo(channel, connectionListener);
             }
+
+
 
         } else if (WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION.equals(action)) {
 

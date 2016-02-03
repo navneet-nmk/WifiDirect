@@ -3,10 +3,14 @@ package com.teenvan.wifidirect;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.provider.Settings;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,60 +24,57 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.Charset;
 
-public class ChatActivity extends AppCompatActivity implements WifiP2pManager.ConnectionInfoListener {
+public class ChatActivity extends AppCompatActivity  {
 
     // Declaration of member variables
     private TextView mChatText;
     private Button mSendButton;
     private EditText mMessage;
+    private static final int SOCKET_TIMEOUT = 5000;
+    private String host;
+    private int port;
+    private WifiP2pDevice device;
+    private WifiP2pInfo info;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
 
+        host = getIntent().getStringExtra("Host");
+//        Log.d("Host Address", host);
+
         // Referencing the UI elements
         mChatText = (TextView)findViewById(R.id.chatText);
         mSendButton = (Button)findViewById(R.id.sendMessage);
         mMessage = (EditText)findViewById(R.id.messageEditText);
+
+//         host = info.groupOwnerAddress.getHostAddress();
 
 
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String text = mMessage.getText().toString();
-                
+                Intent serviceIntent = new Intent(ChatActivity.this, FileTransferService.class);
+                serviceIntent.putExtra(FileTransferService.EXTRAS_FILE_PATH, text);
+                serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_ADDRESS,
+                       host);
+                serviceIntent.putExtra(FileTransferService.EXTRAS_GROUP_OWNER_PORT, 8988);
+                startService(serviceIntent);
             }
         });
     }
 
-    @Override
-    public void onConnectionInfoAvailable(WifiP2pInfo info) {
-        InetAddress groupOwnerAddress = info.groupOwnerAddress;
-
-        // After the group negotiation, we can determine the group owner.
-        if (info.groupFormed && info.isGroupOwner) {
-            // Do whatever tasks are specific to the group owner.
-            // One common case is creating a server thread and accepting
-            // incoming connections.
-
-            // Owner Side - Create a server
-            new FileServerAsyncTask(ChatActivity.this, )
-                    .execute();
-
-        } else if (info.groupFormed) {
-
-            // Client Side
-
-
-
-
-        }
-    }
 
 
     public static class FileServerAsyncTask extends AsyncTask<Void, Void, String> {
@@ -129,4 +130,6 @@ public class ChatActivity extends AppCompatActivity implements WifiP2pManager.Co
         }
 
     }
+
+
 }
