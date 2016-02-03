@@ -115,9 +115,17 @@ public class WifiBroadcastReceiver extends BroadcastReceiver {
                             // Do whatever tasks are specific to the group owner.
                             // One common case is creating a server thread and accepting
                             // incoming connections.
+
+                            // Owner Side - Create a server
+
                             Toast.makeText(context,"Connected as Group Owner",Toast.LENGTH_SHORT).show();
                         } else if (info.groupFormed) {
+
+                            // Client Side
                             Toast.makeText(context,"Connected as client",Toast.LENGTH_SHORT).show();
+
+
+
                         }
                     }
                 });

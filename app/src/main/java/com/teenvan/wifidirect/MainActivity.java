@@ -8,6 +8,7 @@ import android.net.wifi.WpsInfo;
 import android.net.wifi.p2p.WifiP2pConfig;
 import android.net.wifi.p2p.WifiP2pInfo;
 import android.net.wifi.p2p.WifiP2pManager;
+import android.net.wifi.p2p.nsd.WifiP2pDnsSdServiceInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -21,6 +22,8 @@ import com.teenvan.wifidirect.model.DeviceClass;
 
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 import de.greenrobot.event.EventBus;
 
@@ -99,6 +102,8 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
                                 public void onSuccess() {
                                     Toast.makeText(MainActivity.this,"Connected",Toast.LENGTH_SHORT)
                                             .show();
+                                    Intent intent = new Intent(MainActivity.this, ChatActivity.class);
+                                    startActivity(intent);
                                 }
 
                                 @Override
@@ -110,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Co
                         }
                     }
                 }));
+
     }
 
 
