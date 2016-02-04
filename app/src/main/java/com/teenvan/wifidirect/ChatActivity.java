@@ -33,7 +33,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.charset.Charset;
 
-public class ChatActivity extends AppCompatActivity  {
+public class ChatActivity extends AppCompatActivity {
 
     // Declaration of member variables
     private TextView mChatText;
@@ -44,6 +44,7 @@ public class ChatActivity extends AppCompatActivity  {
     private int port;
     private WifiP2pDevice device;
     private WifiP2pInfo info;
+    private boolean isGroupOwner = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +52,7 @@ public class ChatActivity extends AppCompatActivity  {
         setContentView(R.layout.activity_chat);
 
         host = getIntent().getStringExtra("Host");
+        isGroupOwner = getIntent().getBooleanExtra("GroupOwner", false);
 //        Log.d("Host Address", host);
 
         // Referencing the UI elements
@@ -60,6 +62,12 @@ public class ChatActivity extends AppCompatActivity  {
 
 //         host = info.groupOwnerAddress.getHostAddress();
 
+
+        if(isGroupOwner){
+            mSendButton.setVisibility(View.INVISIBLE);
+            mMessage.setVisibility(View.INVISIBLE);
+            new FileServerAsyncTask(this, mChatText).execute();
+        }
 
         mSendButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -74,7 +82,6 @@ public class ChatActivity extends AppCompatActivity  {
             }
         });
     }
-
 
 
     public static class FileServerAsyncTask extends AsyncTask<Void, Void, String> {

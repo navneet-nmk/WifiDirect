@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity  {
 
     // EventBus Declaration
     private EventBus bus = EventBus.getDefault();
+    private boolean isGroupOwner =false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,16 +100,23 @@ public class MainActivity extends AppCompatActivity  {
                             WifiP2pConfig config = new WifiP2pConfig();
                             config.deviceAddress = devs.get(position).getDeviceId();
                             config.wps.setup = WpsInfo.PBC;
-                            if(host!=null) {
+
                                 manager.connect(mChannel, config, new WifiP2pManager.ActionListener() {
                                     @Override
                                     public void onSuccess() {
-                                        Toast.makeText(MainActivity.this, "Connected", Toast.LENGTH_SHORT)
-                                                .show();
-                                        Intent intent = new Intent(MainActivity.this,
-                                                ChatActivity.class);
-                                        intent.putExtra("Host", host);
-                                        startActivity(intent);
+                                        Toast.makeText(MainActivity.this, "Connected", Toast.LENGTH_SHORT).show();
+                                        if(host!=null) {
+                                            Toast.makeText(MainActivity.this, "Connected", Toast.LENGTH_SHORT)
+                                                    .show();
+                                            Intent intent = new Intent(MainActivity.this,
+                                                    ChatActivity.class);
+                                            intent.putExtra("Host", host);
+                                            intent.putExtra("GroupOwner", isGroupOwner);
+                                            startActivity(intent);
+
+                                        }else{
+                                            Toast.makeText(MainActivity.this, "Host is null",Toast.LENGTH_SHORT).show();
+                                        }
                                     }
 
                                     @Override
@@ -118,9 +126,7 @@ public class MainActivity extends AppCompatActivity  {
                                     }
                                 });
 
-                            }else{
-                                Toast.makeText(MainActivity.this, "Host is null",Toast.LENGTH_SHORT).show();
-                            }
+
                         }
                     }
                 }));
@@ -135,11 +141,15 @@ public class MainActivity extends AppCompatActivity  {
                     // One common case is creating a server thread and accepting
                     // incoming connections.
                     Toast.makeText(MainActivity.this, "Group Owner", Toast.LENGTH_LONG).show();
+                    isGroupOwner = true;
+
                 } else if (info.groupFormed) {
                     // The other device acts as the client. In this case,
                     // you'll want to create a client thread that connects to the group
                     // owner.
                     Toast.makeText(MainActivity.this, "Group Formed", Toast.LENGTH_LONG).show();
+                    isGroupOwner = false;
+
                 }
             }
         };
