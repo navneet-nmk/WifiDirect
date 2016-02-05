@@ -17,6 +17,7 @@
         android:textColor="@android:color/black"
         android:text="Chat Message"/>
 
+
     <EditText
         android:id="@+id/messageEditText"
         android:layout_marginTop="10dp"

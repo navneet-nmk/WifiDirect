@@ -32,10 +32,12 @@
         <activity android:name=".ChatActivity">
         </activity>
 
-        <service android:enabled="true" android:name=".FileTransferService" />
+        <service
+            android:name=".FileTransferService"
+            android:enabled="true"/>
 
+        <activity android:name=".TestActivity">
+        </activity>
     </application>
-
-
 
 </manifest>
